@@ -52,8 +52,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
     public static boolean isRunning = false;
     private WindowManager windowManager = null;
     private FlutterView flutterView;
-    private MethodChannel flutterChannel = new MethodChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.OVERLAY_TAG);
-    private BasicMessageChannel<Object> overlayMessageChannel = new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE);
+    private MethodChannel flutterChannel = FlutterEngineCache.getInstance() != null && FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG) != null ?
+        new MethodChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.OVERLAY_TAG) : null;
+    private BasicMessageChannel<Object> overlayMessageChannel = FlutterEngineCache.getInstance() != null && FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG) != null ?
+        new BasicMessageChannel(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG).getDartExecutor(), OverlayConstants.MESSENGER_TAG, JSONMessageCodec.INSTANCE) : null;
     private int clickableFlag = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 
@@ -85,6 +87,10 @@ public class OverlayService extends Service implements View.OnTouchListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         mResources = getApplicationContext().getResources();
+        if (intent == null || flutterChannel == null || overlayMessageChannel == null) {
+            isRunning = false;
+            return START_STICKY;
+        }
         boolean isCloseWindow = intent.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false);
         if (isCloseWindow) {
             if (windowManager != null) {
@@ -104,7 +110,11 @@ public class OverlayService extends Service implements View.OnTouchListener {
         }
         isRunning = true;
         Log.d("onStartCommand", "Service started");
-        FlutterEngine engine = FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG);
+        FlutterEngine engine = FlutterEngineCache.getInstance() != null ? FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG) : null;
+        if (engine == null) {
+            isRunning = false;
+            return START_STICKY;
+        }
         engine.getLifecycleChannel().appIsResumed();
         flutterView = new FlutterView(getApplicationContext(), new FlutterTextureView(getApplicationContext()));
         flutterView.attachToFlutterEngine(FlutterEngineCache.getInstance().get(OverlayConstants.CACHED_TAG));
