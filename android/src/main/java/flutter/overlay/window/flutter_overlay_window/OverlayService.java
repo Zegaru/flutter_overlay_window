@@ -120,6 +120,9 @@ public class OverlayService extends Service implements View.OnTouchListener {
                 int width = call.argument("width");
                 int height = call.argument("height");
                 resizeOverlay(width, height, result);
+            } else if (call.method.equals("updateDrag")) {
+                Boolean enableDrag = call.argument("enableDrag");
+                updateOverlayDrag(result, enableDrag);
             }
         });
         overlayMessageChannel.setMessageHandler((message, reply) -> {
@@ -223,6 +226,16 @@ public class OverlayService extends Service implements View.OnTouchListener {
             params.width = (width == -1999 || width == -1) ? -1 : dpToPx(width);
             params.height = (height != 1999 || height != -1) ? dpToPx(height) : height;
             windowManager.updateViewLayout(flutterView, params);
+            result.success(true);
+        } else {
+            result.success(false);
+        }
+    }
+
+
+    private void updateOverlayDrag(MethodChannel.Result result, Boolean enableDrag) {
+        if (windowManager != null) {
+            WindowSetup.enableDrag = enableDrag;
             result.success(true);
         } else {
             result.success(false);
@@ -352,10 +365,12 @@ public class OverlayService extends Service implements View.OnTouchListener {
             mAnimationHandler.post(() -> {
                 params.x = (2 * (params.x - mDestX)) / 3 + mDestX;
                 params.y = (2 * (params.y - mDestY)) / 3 + mDestY;
-                windowManager.updateViewLayout(flutterView, params);
-                if (Math.abs(params.x - mDestX) < 2 && Math.abs(params.y - mDestY) < 2) {
-                    TrayAnimationTimerTask.this.cancel();
-                    mTrayAnimationTimer.cancel();
+                if (windowManager != null) {
+                    windowManager.updateViewLayout(flutterView, params);
+                    if (Math.abs(params.x - mDestX) < 2 && Math.abs(params.y - mDestY) < 2) {
+                        TrayAnimationTimerTask.this.cancel();
+                        mTrayAnimationTimer.cancel();
+                    }
                 }
             });
         }

@@ -95,7 +95,7 @@ class FlutterOverlayWindow {
     return _controller.stream;
   }
 
-  /// Update the overlay flag while the overlay in action
+  /// Update the overlay flag while the overlay is in action
   static Future<bool?> updateFlag(OverlayFlag flag) async {
     final bool? _res = await _overlayChannel
         .invokeMethod<bool?>('updateFlag', {'flag': flag.name});
@@ -111,6 +111,13 @@ class FlutterOverlayWindow {
         'height': height,
       },
     );
+    return _res;
+  }
+
+  /// Update the overlay drag while the overlay is in action
+  static Future<bool?> updateDrag(bool enableDrag) async {
+    final bool? _res = await _overlayChannel
+        .invokeMethod<bool?>('updateDrag', {'enableDrag': enableDrag});
     return _res;
   }
 
