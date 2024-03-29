@@ -91,6 +91,9 @@ void overlayMain() {
  /// Update the overlay size in the screen
  await FlutterOverlayWindow.resizeOverlay(80, 120);
 
+ /// Update weather the overlay can be dragged or not
+ await FlutterOverlayWindow.updateDrag(true);
+
 ```
 
 ```dart
