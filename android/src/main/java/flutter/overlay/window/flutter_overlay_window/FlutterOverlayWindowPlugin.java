@@ -108,6 +108,9 @@ public class FlutterOverlayWindowPlugin implements
                 result.success(true);
             }
             return;
+        } else if (call.method.equals("updateDrag")) {
+            result.success(true);
+            return;
         } else {
             result.notImplemented();
         }
